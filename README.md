@@ -70,8 +70,7 @@ C:\msys64\usr\bin\bash.exe -lc '/g/deps-build/build-deps.sh'
 ## Flag rationale
 
 - Per-target `-march/-mtune` (znver3/znver2/rocketlake),
-  `-mprefer-vector-width=256` (Zen3 double-pumps 512b; RKL: avoid
-  AVX-512 throttling), `-O3 -funroll-loops -fomit-frame-pointer
+  `-mprefer-vector-width=256`, `-O3 -funroll-loops -fomit-frame-pointer
   -fstrict-aliasing -fno-trapping-math`. **No fast-math** anywhere
   (IEEE codec math).
 - Deps are thin-LTO by default (`DEPS_LTO`, default on);
