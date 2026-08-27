@@ -1,0 +1,10 @@
+# dependency source clones, out-of-tree build dirs, merged prefixes
+/src/
+/build/
+/deps-zn3/
+/deps-zn2/
+/deps-11700/
+
+# logs
+/logs/
+*.log
