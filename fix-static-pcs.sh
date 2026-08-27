@@ -39,11 +39,20 @@ done
 # (undefined ZSTD_* at mpv.exe link). Our prefixes are static-only, so
 # promote Libs.private into Libs. Idempotent (marker: -lzstd in Libs).
 la="$PCDIR/libarchive.pc"
-if [[ -f "$la" ]] && grep -q '^Libs.private:' "$la" \
-	&& ! grep '^Libs:' "$la" | grep -q -- '-lzstd'; then
-	priv="$(sed -n 's/^Libs.private:[[:space:]]*//p' "$la")"
-	sed -i "s|^Libs:.*|& $priv|" "$la"
-	echo "fix-static-pcs: libarchive Libs += Libs.private"
+if [[ -f "$la" ]]; then
+	if grep -q '^Libs.private:' "$la" \
+		&& ! grep '^Libs:' "$la" | grep -q -- '-lzstd'; then
+		priv="$(sed -n 's/^Libs.private:[[:space:]]*//p' "$la" | tr -d '\r')"
+		sed -i 's/\r$//' "$la"
+		sed -i "s|^Libs:.*|& $priv|" "$la"
+		echo "fix-static-pcs: libarchive Libs += Libs.private"
+	else
+		echo "fix-static-pcs: libarchive.pc skip" \
+			"(has-private=$(grep -c '^Libs.private:' "$la")," \
+			"zstd-in-libs=$(grep '^Libs:' "$la" | grep -c -- '-lzstd'))"
+	fi
+else
+	echo "fix-static-pcs: no libarchive.pc in $PCDIR"
 fi
 
 echo "fix-static-pcs: $fixed pc files patched"
