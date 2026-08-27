@@ -7,7 +7,7 @@ mkdir -p "$DEPS_ROOT/logs" "$SRC_ROOT"
 FAIL=()
 for r in "$HERE"/recipes/*.sh; do
 	name="$(basename "$r" .sh)"
-	GIT_URL=""; GIT_BRANCH=""
+	GIT_URL=""; GIT_BRANCH=""; SRC_URL=""
 	# shellcheck disable=SC1090
 	. "$r" 2>/dev/null || true
 	dir="$SRC_ROOT/$name"
@@ -25,6 +25,33 @@ for r in "$HERE"/recipes/*.sh; do
 		git clone ${GIT_BRANCH:+--branch "$GIT_BRANCH"} "$GIT_URL" "$dir" >/dev/null 2>&1 \
 			&& log "cloned $name" \
 			|| { log "WARN clone failed: $name"; FAIL+=("$name"); }
+	elif [[ -n "${SRC_URL:-}" ]]; then
+		# tarball-based recipe: fetch once so the deps jobs hit the cache
+		if [[ -f "$dir/.tarball-done" ]]; then
+			log "tarball cached: $name"
+		else
+			log "fetch tarball: $name"
+			rm -rf "$dir"; mkdir -p "$dir"
+			tflag=-xJz
+			case "$SRC_URL" in
+				*.tar.gz|*.tgz) tflag=-xz ;;
+				*.tar.bz2)      tflag=-xj ;;
+				*.tar.xz)       tflag=-xJ ;;
+				*.tar.lz)       tflag=-xl ;;
+			esac
+			tmp="$SRC_ROOT/.$name.tarball"
+			if curl -fL --retry 5 --retry-delay 3 --retry-all-errors \
+				-o "$tmp" "$SRC_URL" >/dev/null 2>&1 \
+				&& tar $tflag --strip-components=1 -C "$dir" < "$tmp"; then
+				echo "$SRC_URL" > "$dir/.tarball-done"
+				rm -f "$tmp"
+				log "fetched $name"
+			else
+				rm -f "$tmp"
+				log "WARN tarball fetch failed: $name"
+				FAIL+=("$name")
+			fi
+		fi
 	fi
 done
 [[ ${#FAIL[@]} -eq 0 ]] || { log "FAILED repos: ${FAIL[*]}"; exit 1; }

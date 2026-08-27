@@ -34,9 +34,17 @@ if [[ "${SKIP_SYNC:-0}" != "1" ]]; then
 				*.tar.xz)  tflag=-xJ ;;
 				*.tar.lz)  tflag=-xl ;;
 			esac
-			curl -fL "$SRC_URL" | tar $tflag --strip-components=1 -C "$SRCD" \
+			# download to a file first (pipe-to-tar hides partial fetches);
+			# retry hard: ftp.gnu.org et al. flake from CI runners
+			tmp="$SRC_ROOT/.$NAME.tarball"
+			curl -fL --retry 5 --retry-delay 3 --retry-all-errors \
+				-o "$tmp" "$SRC_URL" \
 				>>"$DEPS_ROOT/logs/pull-$NAME.log" 2>&1 \
 				|| die "$NAME: tarball fetch failed"
+			tar $tflag --strip-components=1 -C "$SRCD" < "$tmp" \
+				>>"$DEPS_ROOT/logs/pull-$NAME.log" 2>&1 \
+				|| die "$NAME: tarball extract failed"
+			rm -f "$tmp"
 			echo "$SRC_URL" > "$SRCD/.tarball-done"
 		fi
 	else
