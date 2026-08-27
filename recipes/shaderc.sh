@@ -5,7 +5,9 @@ GIT_URL="https://github.com/google/shaderc"
 GIT_SUBMODULES=0
 BUILD() {
 	local d="$SRC_ROOT/$NAME"
-	python3 "$d/utils/git-sync-deps" >>"$LOGF" 2>&1 || true
+	# timeout guard: git-sync-deps can hang (observed: stuck `git rev-parse`
+	# children); better to fail fast on the third_party check below
+	timeout 600 python3 "$d/utils/git-sync-deps" >>"$LOGF" 2>&1 || true
 	for dep in glslang spirv-tools spirv-headers; do
 		[[ -d "$d/third_party/$dep/.git" ]] || \
 			{ echo "shaderc: third_party/$dep missing" >>"$LOGF"; return 1; }
