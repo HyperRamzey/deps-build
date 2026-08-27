@@ -33,4 +33,17 @@ for a in "$PREFIX"/lib/*.a; do
 		fi
 	fi
 done
+
+# libarchive: mpv's meson consumes its pc WITHOUT --static, so the zstd/
+# bz2/lzma/... closure in Libs.private never reaches the link line
+# (undefined ZSTD_* at mpv.exe link). Our prefixes are static-only, so
+# promote Libs.private into Libs. Idempotent (marker: -lzstd in Libs).
+la="$PCDIR/libarchive.pc"
+if [[ -f "$la" ]] && grep -q '^Libs.private:' "$la" \
+	&& ! grep '^Libs:' "$la" | grep -q -- '-lzstd'; then
+	priv="$(sed -n 's/^Libs.private:[[:space:]]*//p' "$la")"
+	sed -i "s|^Libs:.*|& $priv|" "$la"
+	echo "fix-static-pcs: libarchive Libs += Libs.private"
+fi
+
 echo "fix-static-pcs: $fixed pc files patched"

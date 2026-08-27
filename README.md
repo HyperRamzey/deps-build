@@ -12,6 +12,7 @@ packages are linked into the media path.
 | zn3     | Ryzen 5700X3D (znver3) | `deps-zn3`   |
 | zn2     | Zen2 (znver2)          | `deps-zn2`   |
 | 11700   | i7-11700 (rocketlake)  | `deps-11700` |
+| 3050    | Zen2 (znver2)          | `deps-3050`  |
 
 > [!CAUTION]
 > **Binaries produced with these dependencies are NOT redistributable.**

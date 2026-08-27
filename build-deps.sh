@@ -1,13 +1,13 @@
 #!/bin/bash
 # build-deps.sh [targets...] — full dependency matrix, dependency-tiered
-#   default targets: zn3 zn2 11700
+#   default targets: zn3 zn2 11700 3050
 # Env: FORCE=1 rebuild-all, DEPS_LTO=1 thin-LTO deps, JOBS=N parallel make
 set -Eeuo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/common.sh"
 
 TARGETS=("$@")
-[[ ${#TARGETS[@]} -eq 0 ]] && TARGETS=(zn3 zn2 11700)
+[[ ${#TARGETS[@]} -eq 0 ]] && TARGETS=(zn3 zn2 11700 3050)
 mkdir -p "$DEPS_ROOT/logs" "$SRC_ROOT" "$BUILD_ROOT"
 
 # Tier order matters (topological)

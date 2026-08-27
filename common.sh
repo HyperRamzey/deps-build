@@ -1,6 +1,6 @@
 #!/bin/bash
 # deps-build: shared environment + helpers for self-compiled per-target dependency builds
-# Targets: zn2 (Zen2/Pascal sm_75) | zn3 (Zen3/Blackwell sm_120a) | 11700 (RKL/Ada sm_89)
+# Targets: zn2 (Zen2/Pascal sm_75) | zn3 (Zen3/Blackwell sm_120a) | 11700 (RKL/Ada sm_89) | 3050 (Zen2/Ampere sm_86)
 
 set -Eeuo pipefail
 export MSYSTEM=CLANG64
@@ -20,7 +20,8 @@ target_env() {
 		zn2)   ARCH=znver2;      TARGET_CPU="Zen2 + GTX 1650M (Pascal)" ;;
 		zn3)   ARCH=znver3;      TARGET_CPU="Zen3 + RTX 5070 (Blackwell)" ;;
 		11700) ARCH=rocketlake;  TARGET_CPU="i7-11700 (RKL) + RTX 4080 (Ada)" ;;
-		*) die "unknown target '$t' (want: zn2|zn3|11700)" ;;
+		3050)  ARCH=znver2;      TARGET_CPU="Zen2 + RTX 3050M (Ampere)" ;;
+		*) die "unknown target '$t' (want: zn2|zn3|11700|3050)" ;;
 	esac
 	TARGET="$t"
 	PREFIX="$DEPS_ROOT/deps-$t"
@@ -121,6 +122,9 @@ autotools_driver() { # args: srcdir [configure options...]
 	if [[ ! -f "$sd/configure" ]]; then
 		( cd "$sd" && autoreconf -fi ) >>"$LOGF" 2>&1 || { echo "autoreconf FAILED ($NAME)" >>"$LOGF"; return 1; }
 	fi
+	# in-tree build: wipe stale state so a reconfigure with different
+	# flags never archives old objects (e.g. libsixel curl refs)
+	( cd "$sd" && make distclean ) >>"$LOGF" 2>&1 || true
 	( cd "$sd" && ./configure --prefix="$PREFIX" \
 		--disable-dependency-tracking --enable-static --disable-shared \
 		CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" \

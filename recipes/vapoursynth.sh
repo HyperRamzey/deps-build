@@ -25,7 +25,10 @@ BUILD() {
 		echo "Description: A frameserver for the 21st century"
 		echo "Version: $(sed -n 's/^Version: //p' "$sp/pkgconfig/vapoursynth.pc")"
 		echo "Libs: -L\${libdir} -lvapoursynth"
-		echo "Cflags: -I\${includedir}"
+		# Both include roots: FFmpeg includes <vapoursynth/VSScript4.h>
+		# (needs -Iincludedir), mpv includes <VSScript4.h> flat (needs
+		# -Iincludedir/vapoursynth). Emit both so either resolves.
+		echo "Cflags: -I\${includedir} -I\${includedir}/vapoursynth"
 	} > "$PREFIX/lib/pkgconfig/vapoursynth.pc"
 }
 BEST_EFFORT=1
