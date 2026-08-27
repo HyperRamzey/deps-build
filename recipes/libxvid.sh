@@ -8,6 +8,11 @@ BUILD() {
 	git -C "$d" apply --whitespace=nowarn "$HERE/patches/libxvid-clang.patch" \
 		2>>"$LOGF" || log "xvid patch: already applied (continuing)"
 	local b="$d/build/generic"
+	# fresh clones only carry configure.in; generate configure (+guess/sub)
+	if [[ ! -f "$b/configure" ]]; then
+		( cd "$b" && autoreconf -fi ) >>"$LOGF" 2>&1 ||
+			{ echo "xvid autoreconf FAILED" >>"$LOGF"; return 1; }
+	fi
 	( cd "$b" && CFLAGS="$CFLAGS -std=c89 -DWIN32" LDFLAGS="$LDFLAGS" \
 		./configure --prefix="$PREFIX" --disable-pthread ) > >(tee -a "$LOGF") 2>&1 || \
 		{ echo "xvid configure FAILED" >>"$LOGF"; return 1; }
