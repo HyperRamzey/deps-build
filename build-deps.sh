@@ -17,7 +17,7 @@ TIERS=(
 	"x264 x265 libvpx aom dav1d svtav1 openh264 libwebp openjpeg jxl zimg vmaf vidstab theora rav1e libxvid libmysofa vvenc uavs3d xevd xeve openapv svtjpegxs lcevcdec mpeghdec avisynth"
 	"freetype fribidi harfbuzz fontconfig libxml2 libass libbluray libaribcaption uchardet libgme libmodplug libsixel dvdcss dvdread dvdnav libcdio libcdio-paranoia luajit mujs libarchive gavl frei0r sdl2"
 	"srt libssh libzmq librtmp librist subrandr"
-	"vulkan-headers vulkan-loader glslang shaderc spirv-cross opencl-headers opencl-icd-loader ffnvcodec libvpl libdovi vapoursynth"
+	"vulkan-headers vulkan-loader glslang shaderc spirv-cross opencl-headers opencl-icd-loader ffnvcodec libvpl libdovi vapoursynth wat4ff"
 )
 
 FAILED=()

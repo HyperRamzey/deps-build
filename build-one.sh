@@ -35,10 +35,10 @@ if [[ "${SKIP_SYNC:-0}" != "1" ]]; then
 				*.tar.lz)  tflag=-xl ;;
 			esac
 			# download to a file first (pipe-to-tar hides partial fetches);
-			# retry hard: ftp.gnu.org et al. flake from CI runners
+			# retry + mirror fallback: ftp.gnu.org et al. flake from CI runners
 			tmp="$SRC_ROOT/.$NAME.tarball"
-			curl -fL --retry 5 --retry-delay 3 --retry-all-errors \
-				-o "$tmp" "$SRC_URL" \
+			mapfile -t urls < <(mirror_urls "$SRC_URL")
+			fetch_url "$tmp" "${urls[@]}" \
 				>>"$DEPS_ROOT/logs/pull-$NAME.log" 2>&1 \
 				|| die "$NAME: tarball fetch failed"
 			tar $tflag --strip-components=1 -C "$SRCD" < "$tmp" \

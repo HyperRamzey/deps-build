@@ -40,8 +40,8 @@ for r in "$HERE"/recipes/*.sh; do
 				*.tar.lz)       tflag=-xl ;;
 			esac
 			tmp="$SRC_ROOT/.$name.tarball"
-			if curl -fL --retry 5 --retry-delay 3 --retry-all-errors \
-				-o "$tmp" "$SRC_URL" >/dev/null 2>&1 \
+			mapfile -t urls < <(mirror_urls "$SRC_URL")
+			if fetch_url "$tmp" "${urls[@]}" \
 				&& tar $tflag --strip-components=1 -C "$dir" < "$tmp"; then
 				echo "$SRC_URL" > "$dir/.tarball-done"
 				rm -f "$tmp"

@@ -13,6 +13,30 @@ BUILD_ROOT="$DEPS_ROOT/build"
 log() { printf '\033[1;36m[deps]\033[0m %s\n' "$*"; }
 die() { printf '\033[1;31m[deps:FATAL]\033[0m %s\n' "$*" >&2; exit 1; }
 
+# fetch_url <dest> <url...> — try each URL with retries (CI egress flakes)
+fetch_url() {
+	local out="$1" u; shift
+	for u in "$@"; do
+		log "fetch: $u"
+		if curl -fL --retry 3 --retry-delay 3 --retry-all-errors \
+			-o "$out" "$u" >/dev/null 2>&1; then
+			return 0
+		fi
+	done
+	return 1
+}
+# mirror_urls <url> — primary first, then known-good mirrors
+mirror_urls() {
+	local u="$1"
+	echo "$u"
+	case "$u" in
+		https://ftp.gnu.org/pub/gnu/*)
+			echo "https://ftpmirror.gnu.org/${u#https://ftp.gnu.org/pub/gnu/}" ;;
+		https://ftp.gnu.org/gnu/*)
+			echo "https://ftpmirror.gnu.org/${u#https://ftp.gnu.org/gnu/}" ;;
+	esac
+}
+
 # Per-target CPU codegen. GPU arch lives ONLY in FFmpeg scripts (clang NVPTX).
 target_env() {
 	local t="$1"
