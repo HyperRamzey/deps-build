@@ -82,7 +82,13 @@ sync_src() {
 
 # --- build-system drivers ----------------------------------------------------
 meson_driver() { # args: srcdir builddir [meson options...]
-	local sd="$1" bd="$2"; shift 2
+	# Resolve to REAL native paths: on CI, /g is a subst drive and meson
+	# resolves the source dir to its physical target while ninja's cwd stays
+	# on the subst letter. Generator scripts that relpath(src, builddir)
+	# (harfbuzz gen-harfbuzzcc.py) then die with "path is on mount 'G:',
+	# start on mount 'D:'". Real paths on both sides avoid the mismatch.
+	local sd bd
+	sd="$(cygpath -am "$1")"; bd="$(cygpath -am "$2")"; shift 2
 	local lto_args=()
 	[[ "${DEPS_LTO:-1}" == "1" ]] && lto_args+=(-Db_lto=true -Db_lto_mode=thin)
 	meson setup "$bd" "$sd" --prefix="$PREFIX" --buildtype=release \
